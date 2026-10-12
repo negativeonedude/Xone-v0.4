@@ -23,7 +23,7 @@ import { PortfolioView } from './views/PortfolioView';
 import { LoginView } from './views/LoginView';
 
 export default function App() {
-  const [currentTab, setCurrentTab] = useState<NavigationTab>('dashboard');
+  const [currentTab, setCurrentTab] = useState<NavigationTab>('login');
   const [currentProject, setCurrentProject] = useState<Project>(PROJECTS[0]);
   const [documents, setDocuments] = useState<CdeDocument[]>(CDE_DOCUMENTS);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
