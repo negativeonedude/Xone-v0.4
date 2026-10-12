@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { ClashItem } from '../types';
+import { useDissolve } from '../hooks/useDissolve';
 
 interface ClashDetailModalProps {
   isOpen: boolean;
@@ -16,16 +17,21 @@ export const ClashDetailModal: React.FC<ClashDetailModalProps> = ({
   onViewIn3D,
   onTriggerToast
 }) => {
-  if (!isOpen || !clash) return null;
+  const { visible, closing } = useDissolve(isOpen);
+  const lastClashRef = useRef<ClashItem | null>(null);
+  if (clash) lastClashRef.current = clash;
+  const shownClash = clash || lastClashRef.current;
+
+  if (!visible || !shownClash) return null;
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm animate-backdrop-dissolve"
+      className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm ${closing ? 'animate-backdrop-dissolve-out' : 'animate-backdrop-dissolve'}`}
       dir="rtl"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-3xl border border-slate-200 shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col animate-modal-dissolve"
+        className={`bg-white rounded-3xl border border-slate-200 shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col ${closing ? 'animate-modal-dissolve-out' : 'animate-modal-dissolve'}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
@@ -33,38 +39,38 @@ export const ClashDetailModal: React.FC<ClashDetailModalProps> = ({
           <div className="flex items-center gap-3">
             <div
               className={`w-11 h-11 rounded-2xl flex items-center justify-center shadow-xs ${
-                clash.severity === 'critical'
+                shownClash.severity === 'critical'
                   ? 'bg-rose-500 text-white'
-                  : clash.severity === 'medium'
+                  : shownClash.severity === 'medium'
                   ? 'bg-amber-500 text-white'
                   : 'bg-emerald-600 text-white'
               }`}
             >
               <span className="material-symbols-outlined text-2xl">
-                {clash.status === 'resolved' ? 'task_alt' : 'warning'}
+                {shownClash.status === 'resolved' ? 'task_alt' : 'warning'}
               </span>
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-mono font-bold text-xs px-2.5 py-0.5 rounded-lg bg-slate-200 text-slate-800">
-                  {clash.code}
+                  {shownClash.code}
                 </span>
                 <span
                   className={`px-2.5 py-0.5 rounded-lg text-xs font-bold ${
-                    clash.severity === 'critical'
+                    shownClash.severity === 'critical'
                       ? 'bg-rose-100 text-rose-800 border border-rose-200'
-                      : clash.severity === 'medium'
+                      : shownClash.severity === 'medium'
                       ? 'bg-amber-100 text-amber-800 border border-amber-200'
                       : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
                   }`}
                 >
-                  {clash.severityLabel} • {clash.type}
+                  {shownClash.severityLabel} • {shownClash.type}
                 </span>
                 <span className="px-2 py-0.5 rounded-lg bg-teal-50 text-[#00716B] text-xs font-mono font-bold border border-teal-200">
-                  {clash.discipline1} ✕ {clash.discipline2}
+                  {shownClash.discipline1} ✕ {shownClash.discipline2}
                 </span>
               </div>
-              <h2 className="text-lg font-bold text-slate-900 mt-1">{clash.title}</h2>
+              <h2 className="text-lg font-bold text-slate-900 mt-1">{shownClash.title}</h2>
             </div>
           </div>
 
@@ -82,7 +88,7 @@ export const ClashDetailModal: React.FC<ClashDetailModalProps> = ({
           {/* Top Description Box */}
           <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col gap-2">
             <span className="text-slate-400 font-bold">شرح کامل تداخل فنی و فضایی:</span>
-            <p className="text-slate-800 text-sm leading-relaxed">{clash.description}</p>
+            <p className="text-slate-800 text-sm leading-relaxed">{shownClash.description}</p>
           </div>
 
           {/* 2-Column: Elements in Conflict */}
@@ -95,22 +101,22 @@ export const ClashDetailModal: React.FC<ClashDetailModalProps> = ({
                   المان اول درگیر (Primary Element)
                 </span>
                 <span className="font-mono text-[11px] bg-rose-100 text-rose-800 px-2 py-0.5 rounded font-bold">
-                  {clash.discipline1}
+                  {shownClash.discipline1}
                 </span>
               </div>
 
               <div className="space-y-1.5 pt-1">
                 <div className="flex justify-between border-b border-rose-100 pb-1">
                   <span className="text-slate-500">نام المان:</span>
-                  <span className="font-mono font-bold text-slate-800">{clash.element1}</span>
+                  <span className="font-mono font-bold text-slate-800">{shownClash.element1}</span>
                 </div>
                 <div className="flex justify-between border-b border-rose-100 pb-1">
                   <span className="text-slate-500">شناسه رویت (Element ID):</span>
-                  <span className="font-mono font-bold text-slate-800">{clash.element1Id}</span>
+                  <span className="font-mono font-bold text-slate-800">{shownClash.element1Id}</span>
                 </div>
                 <div className="flex justify-between border-b border-rose-100 pb-1">
                   <span className="text-slate-500">رشته تخصصی:</span>
-                  <span className="font-bold text-slate-700">{clash.discipline1}</span>
+                  <span className="font-bold text-slate-700">{shownClash.discipline1}</span>
                 </div>
               </div>
             </div>
@@ -123,22 +129,22 @@ export const ClashDetailModal: React.FC<ClashDetailModalProps> = ({
                   المان دوم درگیر (Intersecting Element)
                 </span>
                 <span className="font-mono text-[11px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold">
-                  {clash.discipline2}
+                  {shownClash.discipline2}
                 </span>
               </div>
 
               <div className="space-y-1.5 pt-1">
                 <div className="flex justify-between border-b border-emerald-100 pb-1">
                   <span className="text-slate-500">نام المان:</span>
-                  <span className="font-mono font-bold text-slate-800">{clash.element2}</span>
+                  <span className="font-mono font-bold text-slate-800">{shownClash.element2}</span>
                 </div>
                 <div className="flex justify-between border-b border-emerald-100 pb-1">
                   <span className="text-slate-500">شناسه رویت (Element ID):</span>
-                  <span className="font-mono font-bold text-slate-800">{clash.element2Id}</span>
+                  <span className="font-mono font-bold text-slate-800">{shownClash.element2Id}</span>
                 </div>
                 <div className="flex justify-between border-b border-emerald-100 pb-1">
                   <span className="text-slate-500">رشته تخصصی:</span>
-                  <span className="font-bold text-slate-700">{clash.discipline2}</span>
+                  <span className="font-bold text-slate-700">{shownClash.discipline2}</span>
                 </div>
               </div>
             </div>
@@ -148,19 +154,19 @@ export const ClashDetailModal: React.FC<ClashDetailModalProps> = ({
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-200">
             <div className="flex flex-col gap-1">
               <span className="text-slate-400 text-[11px]">موقعیت و طبقه:</span>
-              <span className="font-bold text-slate-800 text-xs">{clash.location}</span>
+              <span className="font-bold text-slate-800 text-xs">{shownClash.location}</span>
             </div>
             <div className="flex flex-col gap-1">
               <span className="text-slate-400 text-[11px]">زون کالبدی:</span>
-              <span className="font-bold text-slate-800 text-xs">{clash.zone}</span>
+              <span className="font-bold text-slate-800 text-xs">{shownClash.zone}</span>
             </div>
             <div className="flex flex-col gap-1">
               <span className="text-slate-400 text-[11px]">عمق نفوذ تداخل:</span>
-              <span className="font-mono font-bold text-rose-600 text-xs" dir="ltr">{clash.penetration}</span>
+              <span className="font-mono font-bold text-rose-600 text-xs" dir="ltr">{shownClash.penetration}</span>
             </div>
             <div className="flex flex-col gap-1">
               <span className="text-slate-400 text-[11px]">قدمت ثبت در CDE:</span>
-              <span className="font-bold text-slate-800 text-xs">{clash.age}</span>
+              <span className="font-bold text-slate-800 text-xs">{shownClash.age}</span>
             </div>
           </div>
 
@@ -169,10 +175,10 @@ export const ClashDetailModal: React.FC<ClashDetailModalProps> = ({
             <div className="p-3.5 rounded-xl border border-slate-200 bg-white flex items-center justify-between">
               <div>
                 <span className="text-slate-400 block text-[11px]">مختصات فضایی در مدل (WCS):</span>
-                <span className="font-mono font-bold text-slate-800 mt-0.5 block" dir="ltr">{clash.coordinates}</span>
+                <span className="font-mono font-bold text-slate-800 mt-0.5 block" dir="ltr">{shownClash.coordinates}</span>
               </div>
               <button
-                onClick={() => onTriggerToast('مختصات کپی شد', clash.coordinates, 'info')}
+                onClick={() => onTriggerToast('مختصات کپی شد', shownClash.coordinates, 'info')}
                 className="px-2.5 py-1 text-[11px] rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold cursor-pointer"
               >
                 کپی
@@ -182,7 +188,7 @@ export const ClashDetailModal: React.FC<ClashDetailModalProps> = ({
             <div className="p-3.5 rounded-xl border border-slate-200 bg-white flex items-center justify-between">
               <div>
                 <span className="text-slate-400 block text-[11px]">ارجاع‌شده به جهت اقدام:</span>
-                <span className="font-bold text-[#00716B] mt-0.5 block">{clash.assignedTo || 'مدیر هماهنگی BIM باران'}</span>
+                <span className="font-bold text-[#00716B] mt-0.5 block">{shownClash.assignedTo || 'مدیر هماهنگی BIM باران'}</span>
               </div>
               <span className="material-symbols-outlined text-teal-600">person</span>
             </div>
@@ -195,7 +201,7 @@ export const ClashDetailModal: React.FC<ClashDetailModalProps> = ({
               <span>دستور اصلاحی و یادداشت مدیر هماهنگی BIM (Resolution Protocol):</span>
             </div>
             <p className="text-slate-800 leading-relaxed text-xs text-justify pr-6">
-              {clash.coordinatorNote}
+              {shownClash.coordinatorNote}
             </p>
           </div>
 
@@ -214,7 +220,7 @@ export const ClashDetailModal: React.FC<ClashDetailModalProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={() => {
-                onTriggerToast('خروجی BCF صادر شد', `بسته BCF موضوع ${clash.code} آماده ارسال شد.`, 'success');
+                onTriggerToast('خروجی BCF صادر شد', `بسته BCF موضوع ${shownClash.code} آماده ارسال شد.`, 'success');
               }}
               className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer"
             >
@@ -223,7 +229,7 @@ export const ClashDetailModal: React.FC<ClashDetailModalProps> = ({
             </button>
             <button
               onClick={() => {
-                onTriggerToast('تغییر وضعیت ثبت شد', `وضعیت تعارض ${clash.code} به‌روزرسانی شد.`, 'info');
+                onTriggerToast('تغییر وضعیت ثبت شد', `وضعیت تعارض ${shownClash.code} به‌روزرسانی شد.`, 'info');
               }}
               className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer"
             >
@@ -242,7 +248,7 @@ export const ClashDetailModal: React.FC<ClashDetailModalProps> = ({
             <button
               onClick={() => {
                 onClose();
-                onViewIn3D(clash);
+                onViewIn3D(shownClash);
               }}
               className="px-4 py-1.5 rounded-xl bg-[#00716B] hover:bg-[#005e59] text-white text-xs font-bold transition-colors shadow-xs flex items-center gap-1.5 cursor-pointer"
             >

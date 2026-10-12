@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { CdeDocument } from '../types';
+import { useDissolve } from '../hooks/useDissolve';
 
 interface UploadModalProps {
   isOpen: boolean;
@@ -31,7 +32,9 @@ export const UploadModal: React.FC<UploadModalProps> = ({
   const [complianceChecked, setComplianceChecked] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  if (!isOpen) return null;
+  const { visible, closing } = useDissolve(isOpen);
+
+  if (!visible) return null;
 
   // Live ISO Code Generator
   const generatedIsoCode = `ALF-${phase}-${discipline}-${subjectCode}-2025-02-18-Rev02`;
@@ -64,12 +67,13 @@ export const UploadModal: React.FC<UploadModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-[150] bg-slate-900/65 backdrop-blur-xs flex items-center justify-center p-4 md:p-6 overflow-y-auto animate-backdrop-dissolve"
+      className={`fixed inset-0 z-[150] bg-slate-900/65 backdrop-blur-xs flex items-center justify-center p-4 md:p-6 overflow-y-auto ${closing ? 'animate-backdrop-dissolve-out' : 'animate-backdrop-dissolve'}`}
+      data-lenis-prevent
       dir="rtl"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-5xl overflow-hidden my-auto animate-modal-dissolve flex flex-col"
+        className={`bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-5xl overflow-hidden my-auto ${closing ? 'animate-modal-dissolve-out' : 'animate-modal-dissolve'} flex flex-col`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header & Stepper */}

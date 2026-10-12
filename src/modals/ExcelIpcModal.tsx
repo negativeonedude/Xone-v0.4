@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { IpcCertificate, IpcItem } from '../types';
+import { useDissolve } from '../hooks/useDissolve';
 
 interface ExcelIpcModalProps {
   isOpen: boolean;
@@ -33,7 +34,9 @@ export const ExcelIpcModal: React.FC<ExcelIpcModalProps> = ({
     'ipc-3': true
   });
 
-  if (!isOpen) return null;
+  const { visible, closing } = useDissolve(isOpen);
+
+  if (!visible) return null;
 
   // Fallback default IPC if not supplied
   const data: IpcCertificate = ipcData || {
@@ -192,12 +195,13 @@ export const ExcelIpcModal: React.FC<ExcelIpcModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-[145] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 overflow-y-auto animate-backdrop-dissolve"
+      className={`fixed inset-0 z-[145] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 overflow-y-auto ${closing ? 'animate-backdrop-dissolve-out' : 'animate-backdrop-dissolve'}`}
+      data-lenis-prevent
       dir="rtl"
       onClick={onClose}
     >
       <div
-        className={`bg-white rounded-2xl border border-slate-300 shadow-2xl flex flex-col overflow-hidden animate-modal-dissolve transition-all duration-200 ${
+        className={`bg-white rounded-2xl border border-slate-300 shadow-2xl flex flex-col overflow-hidden ${closing ? 'animate-modal-dissolve-out' : 'animate-modal-dissolve'} transition-all duration-200 ${
           isFullscreen ? 'w-full h-full rounded-none' : 'w-full max-w-6xl max-h-[92vh]'
         }`}
         onClick={(e) => e.stopPropagation()}

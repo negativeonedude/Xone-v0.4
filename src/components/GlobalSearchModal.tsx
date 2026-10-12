@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { CDE_DOCUMENTS, CLASHES, CDE_FOLDERS } from '../data/mockData';
 import { NavigationTab } from '../types';
+import { useDissolve } from '../hooks/useDissolve';
 
 interface GlobalSearchModalProps {
   isOpen: boolean;
@@ -33,7 +34,9 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  const { visible, closing } = useDissolve(isOpen);
+
+  if (!visible) return null;
 
   const filteredDocs = query.trim()
     ? CDE_DOCUMENTS.filter(
@@ -57,12 +60,12 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-[130] bg-slate-900/60 backdrop-blur-xs flex items-start justify-center pt-20 p-4 animate-backdrop-dissolve"
+      className={`fixed inset-0 z-[130] bg-slate-900/60 backdrop-blur-xs flex items-start justify-center pt-20 p-4 ${closing ? 'animate-backdrop-dissolve-out' : 'animate-backdrop-dissolve'}`}
       dir="rtl"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-2xl overflow-hidden animate-modal-dissolve"
+        className={`bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-2xl overflow-hidden ${closing ? 'animate-modal-dissolve-out' : 'animate-modal-dissolve'}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Search Input Bar */}

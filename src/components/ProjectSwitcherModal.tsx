@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Project } from '../types';
 import { PROJECTS } from '../data/mockData';
+import { useDissolve } from '../hooks/useDissolve';
 
 interface ProjectSwitcherModalProps {
   isOpen: boolean;
@@ -17,16 +18,18 @@ export const ProjectSwitcherModal: React.FC<ProjectSwitcherModalProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
 
-  if (!isOpen) return null;
+  const { visible, closing } = useDissolve(isOpen);
+
+  if (!visible) return null;
 
   return (
     <div
-      className="fixed inset-0 z-[120] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-backdrop-dissolve"
+      className={`fixed inset-0 z-[120] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 ${closing ? 'animate-backdrop-dissolve-out' : 'animate-backdrop-dissolve'}`}
       dir="rtl"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-4xl overflow-hidden animate-modal-dissolve"
+        className={`bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-4xl overflow-hidden ${closing ? 'animate-modal-dissolve-out' : 'animate-modal-dissolve'}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}

@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import Lenis from 'lenis';
+import 'lenis/dist/lenis.css';
 import { NavigationTab, Project, CdeDocument } from './types';
 import { PROJECTS, CDE_DOCUMENTS, APPROVAL_ITEMS, DEFAULT_IPC_CERTIFICATE } from './data/mockData';
 import { Header } from './components/Header';
@@ -50,6 +52,21 @@ export default function App() {
   const removeToast = (id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
+
+  // Smooth scrolling (Lenis)
+  useEffect(() => {
+    const lenis = new Lenis({ lerp: 0.1 });
+    let raf: number;
+    const loop = (time: number) => {
+      lenis.raf(time);
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+    return () => {
+      cancelAnimationFrame(raf);
+      lenis.destroy();
+    };
+  }, []);
 
   // Keyboard shortcut for Cmd+K / Ctrl+K
   useEffect(() => {

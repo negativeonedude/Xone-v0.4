@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { CdeDocument } from '../types';
+import { useDissolve } from '../hooks/useDissolve';
 
 interface DocumentDossierModalProps {
   isOpen: boolean;
@@ -18,16 +19,22 @@ export const DocumentDossierModal: React.FC<DocumentDossierModalProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'details' | 'diff'>('details');
 
-  if (!isOpen || !document) return null;
+  const { visible, closing } = useDissolve(isOpen);
+  const lastDocRef = useRef<CdeDocument | null>(null);
+  if (document) lastDocRef.current = document;
+  const shownDoc = document || lastDocRef.current;
+
+  if (!visible || !shownDoc) return null;
 
   return (
     <div
-      className="fixed inset-0 z-[140] bg-slate-900/65 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-backdrop-dissolve"
+      className={`fixed inset-0 z-[140] bg-slate-900/65 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 overflow-y-auto ${closing ? 'animate-backdrop-dissolve-out' : 'animate-backdrop-dissolve'}`}
+      data-lenis-prevent
       dir="rtl"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-6xl max-h-[92vh] overflow-y-auto animate-modal-dissolve flex flex-col divide-y divide-slate-100"
+        className={`bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-6xl max-h-[92vh] overflow-y-auto ${closing ? 'animate-modal-dissolve-out' : 'animate-modal-dissolve'} flex flex-col divide-y divide-slate-100`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top Header Strip */}
@@ -56,7 +63,7 @@ export const DocumentDossierModal: React.FC<DocumentDossierModalProps> = ({
             {/* Quick Actions */}
             <div className="flex items-center gap-2 self-start sm:self-center">
               <button
-                onClick={() => onDownload(document.title)}
+                onClick={() => onDownload(shownDoc.title)}
                 className="h-9 px-3.5 flex items-center gap-1.5 rounded-xl bg-[#00716B] hover:bg-[#005e59] text-white transition-colors text-xs font-bold shadow-xs cursor-pointer"
               >
                 <span className="material-symbols-outlined text-base">download</span>
@@ -77,10 +84,10 @@ export const DocumentDossierModal: React.FC<DocumentDossierModalProps> = ({
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-slate-600 font-bold">کد استاندارد ملی مدرک (ISO Naming):</span>
               <code className="px-3 py-1 rounded-lg bg-white border border-slate-300 text-[#00716B] font-mono text-xs font-bold tracking-wider select-all" dir="ltr">
-                {document.isoCode}
+                {shownDoc.isoCode}
               </code>
               <button
-                onClick={() => navigator.clipboard.writeText(document.isoCode)}
+                onClick={() => navigator.clipboard.writeText(shownDoc.isoCode)}
                 className="p-1 rounded text-slate-400 hover:text-[#00716B] transition-colors"
                 title="کپی کد"
               >
@@ -153,7 +160,7 @@ export const DocumentDossierModal: React.FC<DocumentDossierModalProps> = ({
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-3 bg-slate-50 border-t border-slate-200 text-xs">
                 <div className="p-2 rounded-lg bg-white border border-slate-200">
                   <span className="text-[10px] text-slate-400 block">دیسیپلین مهندسی</span>
-                  <span className="font-bold text-[#00716B] mt-0.5 block">{document.discipline}</span>
+                  <span className="font-bold text-[#00716B] mt-0.5 block">{shownDoc.discipline}</span>
                 </div>
                 <div className="p-2 rounded-lg bg-white border border-slate-200">
                   <span className="text-[10px] text-slate-400 block">فرمت پرونده</span>
@@ -163,11 +170,11 @@ export const DocumentDossierModal: React.FC<DocumentDossierModalProps> = ({
                 </div>
                 <div className="p-2 rounded-lg bg-white border border-slate-200">
                   <span className="text-[10px] text-slate-400 block">حجم فایل اصلی</span>
-                  <span className="font-bold text-slate-800 mt-0.5 block font-mono">{document.size}</span>
+                  <span className="font-bold text-slate-800 mt-0.5 block font-mono">{shownDoc.size}</span>
                 </div>
                 <div className="p-2 rounded-lg bg-white border border-slate-200">
                   <span className="text-[10px] text-slate-400 block">آخرین ویرایشگر</span>
-                  <span className="font-bold text-slate-700 mt-0.5 block truncate">{document.author}</span>
+                  <span className="font-bold text-slate-700 mt-0.5 block truncate">{shownDoc.author}</span>
                 </div>
               </div>
             </div>
@@ -184,11 +191,11 @@ export const DocumentDossierModal: React.FC<DocumentDossierModalProps> = ({
                 </div>
               </div>
               <button
-                onClick={() => onDownload(document.title)}
+                onClick={() => onDownload(shownDoc.title)}
                 className="px-4 py-2 rounded-xl bg-[#00716B] hover:bg-[#005e59] text-white text-xs font-bold shadow-xs flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
               >
                 <span className="material-symbols-outlined text-base">download</span>
-                <span>دانلود نسخه جاری ({document.size})</span>
+                <span>دانلود نسخه جاری ({shownDoc.size})</span>
               </button>
             </div>
 

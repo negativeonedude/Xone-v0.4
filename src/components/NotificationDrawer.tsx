@@ -1,5 +1,6 @@
 import React from 'react';
 import { NavigationTab } from '../types';
+import { useDissolve } from '../hooks/useDissolve';
 
 interface NotificationDrawerProps {
   isOpen: boolean;
@@ -14,7 +15,9 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
   onNavigate,
   onOpenDocumentDossier
 }) => {
-  if (!isOpen) return null;
+  const { visible, closing } = useDissolve(isOpen);
+
+  if (!visible) return null;
 
   const notifications = [
     {
@@ -55,12 +58,12 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-[125] bg-slate-900/40 backdrop-blur-xs flex justify-start animate-backdrop-dissolve"
+      className={`fixed inset-0 z-[125] bg-slate-900/40 backdrop-blur-xs flex justify-start ${closing ? 'animate-backdrop-dissolve-out' : 'animate-backdrop-dissolve'}`}
       dir="rtl"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md bg-white h-full shadow-2xl flex flex-col justify-between animate-dissolve"
+        className={`w-full max-w-md bg-white h-full shadow-2xl flex flex-col justify-between ${closing ? 'animate-dissolve-out' : 'animate-dissolve'}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
