@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Project, NavigationTab } from '../types';
+import { Project, NavigationTab, ClashPreset } from '../types';
 import { MILESTONES } from '../data/mockData';
 
 interface DashboardViewProps {
@@ -9,6 +9,7 @@ interface DashboardViewProps {
   onOpenUpload: () => void;
   onTriggerToast: (title: string, desc: string, type?: 'success' | 'error' | 'info') => void;
   onOpenExcelIpc?: () => void;
+  onOpenClashFilters?: (preset: ClashPreset) => void;
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
@@ -17,7 +18,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onOpenDocumentDossier,
   onOpenUpload,
   onTriggerToast,
-  onOpenExcelIpc
+  onOpenExcelIpc,
+  onOpenClashFilters
 }) => {
   const [activeCamera, setActiveCamera] = useState<'cam2' | 'cam1' | 'drone'>('cam2');
   const [bimLayerArc, setBimLayerArc] = useState(true);
@@ -586,7 +588,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   { week: 'هـ۷', count: 19, height: '36%', isCurrent: false },
                   { week: 'جاری', count: 12, height: '23%', isCurrent: true },
                 ].map((item, idx) => (
-                  <div key={idx} className="flex flex-col items-center justify-end h-full gap-1 group">
+                  <div
+                    key={idx}
+                    onClick={() =>
+                      onOpenClashFilters?.({
+                        status: 'open',
+                        label: `هفته ${item.week} • ${item.count} تعارض حل‌نشده`,
+                      })
+                    }
+                    className="flex flex-col items-center justify-end h-full gap-1 group cursor-pointer"
+                    title={`مشاهده لیست ${item.count} تعارض حل‌نشده هفته ${item.week}`}
+                  >
                     <span
                       className={`text-[10px] font-mono leading-none transition-transform group-hover:scale-110 ${
                         item.isCurrent ? 'font-bold text-rose-600' : 'text-slate-500 font-medium'
@@ -597,11 +609,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     <div
                       className={`w-full rounded-t transition-all ${
                         item.isCurrent
-                          ? 'bg-rose-500 shadow-2xs'
+                          ? 'bg-rose-500 shadow-2xs group-hover:bg-rose-400'
                           : 'bg-slate-300 group-hover:bg-[#00716B]/60'
                       }`}
                       style={{ height: item.height }}
-                      title={`هفته ${item.week}: ${item.count} تعارض حل‌نشده`}
                     ></div>
                     <span
                       className={`text-[9px] font-mono mt-0.5 leading-none ${
@@ -616,7 +627,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
               {/* Histogram Legend / Summary */}
               <div className="flex items-center justify-between text-[10px] text-slate-500 pt-0.5">
-                <span>شروع دوره: ۵۲ تعارض حل‌نشده</span>
+                <span className="flex items-center gap-1 text-[#00716B] font-medium">
+                  <span className="material-symbols-outlined text-xs">ads_click</span>
+                  برای مشاهده لیست تعارضات هر هفته، روی ستون آن کلیک کنید
+                </span>
                 <span className="font-bold text-slate-700">وضعیت کنونی: <strong className="text-rose-600 font-mono">۱۲</strong> تعارض باز</span>
               </div>
             </div>
